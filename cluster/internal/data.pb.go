@@ -22,6 +22,10 @@ It has these top-level messages:
 	SeriesKeysResponse
 	ExpandSourcesRequest
 	ExpandSourcesResponse
+	BackupShardRequest
+	BackupShardResponse
+	CopyShardRequest
+	CopyShardResponse
 */
 package cluster
 
@@ -378,6 +382,110 @@ func (m *ExpandSourcesResponse) GetErr() string {
 	return ""
 }
 
+type BackupShardRequest struct {
+	ShardID          *uint64 `protobuf:"varint,1,req,name=ShardID" json:"ShardID,omitempty"`
+	Since            *int64  `protobuf:"varint,2,opt,name=Since" json:"Since,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *BackupShardRequest) Reset()         { *m = BackupShardRequest{} }
+func (m *BackupShardRequest) String() string { return proto.CompactTextString(m) }
+func (*BackupShardRequest) ProtoMessage()    {}
+
+func (m *BackupShardRequest) GetShardID() uint64 {
+	if m != nil && m.ShardID != nil {
+		return *m.ShardID
+	}
+	return 0
+}
+
+func (m *BackupShardRequest) GetSince() int64 {
+	if m != nil && m.Since != nil {
+		return *m.Since
+	}
+	return 0
+}
+
+type BackupShardResponse struct {
+	Err              *string `protobuf:"bytes,2,opt,name=Err" json:"Err,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *BackupShardResponse) Reset()         { *m = BackupShardResponse{} }
+func (m *BackupShardResponse) String() string { return proto.CompactTextString(m) }
+func (*BackupShardResponse) ProtoMessage()    {}
+
+func (m *BackupShardResponse) GetErr() string {
+	if m != nil && m.Err != nil {
+		return *m.Err
+	}
+	return ""
+}
+
+type CopyShardRequest struct {
+	Host             *string `protobuf:"bytes,1,req,name=Host" json:"Host,omitempty"`
+	Database         *string `protobuf:"bytes,2,req,name=Database" json:"Database,omitempty"`
+	Policy           *string `protobuf:"bytes,3,req,name=Policy" json:"Policy,omitempty"`
+	ShardID          *uint64 `protobuf:"varint,4,req,name=ShardID" json:"ShardID,omitempty"`
+	Since            *int64  `protobuf:"varint,5,opt,name=Since" json:"Since,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *CopyShardRequest) Reset()         { *m = CopyShardRequest{} }
+func (m *CopyShardRequest) String() string { return proto.CompactTextString(m) }
+func (*CopyShardRequest) ProtoMessage()    {}
+
+func (m *CopyShardRequest) GetHost() string {
+	if m != nil && m.Host != nil {
+		return *m.Host
+	}
+	return ""
+}
+
+func (m *CopyShardRequest) GetDatabase() string {
+	if m != nil && m.Database != nil {
+		return *m.Database
+	}
+	return ""
+}
+
+func (m *CopyShardRequest) GetPolicy() string {
+	if m != nil && m.Policy != nil {
+		return *m.Policy
+	}
+	return ""
+}
+
+func (m *CopyShardRequest) GetShardID() uint64 {
+	if m != nil && m.ShardID != nil {
+		return *m.ShardID
+	}
+	return 0
+}
+
+func (m *CopyShardRequest) GetSince() int64 {
+	if m != nil && m.Since != nil {
+		return *m.Since
+	}
+	return 0
+}
+
+type CopyShardResponse struct {
+	Err              *string `protobuf:"bytes,2,opt,name=Err" json:"Err,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *CopyShardResponse) Reset()         { *m = CopyShardResponse{} }
+func (m *CopyShardResponse) String() string { return proto.CompactTextString(m) }
+func (*CopyShardResponse) ProtoMessage()    {}
+
+func (m *CopyShardResponse) GetErr() string {
+	if m != nil && m.Err != nil {
+		return *m.Err
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*WriteShardRequest)(nil), "cluster.WriteShardRequest")
 	proto.RegisterType((*WriteShardResponse)(nil), "cluster.WriteShardResponse")
@@ -392,4 +500,8 @@ func init() {
 	proto.RegisterType((*SeriesKeysResponse)(nil), "cluster.SeriesKeysResponse")
 	proto.RegisterType((*ExpandSourcesRequest)(nil), "cluster.ExpandSourcesRequest")
 	proto.RegisterType((*ExpandSourcesResponse)(nil), "cluster.ExpandSourcesResponse")
+	proto.RegisterType((*BackupShardRequest)(nil), "cluster.BackupShardRequest")
+	proto.RegisterType((*BackupShardResponse)(nil), "cluster.BackupShardResponse")
+	proto.RegisterType((*CopyShardRequest)(nil), "cluster.CopyShardRequest")
+	proto.RegisterType((*CopyShardResponse)(nil), "cluster.CopyShardResponse")
 }
