@@ -206,10 +206,6 @@ func (s *Service) handleConn(conn net.Conn) {
 			s.statMap.Add(fieldDimensionsReq, 1)
 			s.processFieldDimensionsRequest(conn)
 			return
-		case seriesKeysRequestMessage:
-			s.statMap.Add(seriesKeysReq, 1)
-			s.processSeriesKeysRequest(conn)
-			return
 		default:
 			s.Logger.Printf("cluster service message type not found: %d", typ)
 		}
@@ -397,7 +393,8 @@ func (s *Service) processCreateIteratorRequest(conn net.Conn) {
 }
 
 func (s *Service) processFieldDimensionsRequest(conn net.Conn) {
-	var fields, dimensions map[string]struct{}
+	var fields map[string]influxql.DataType
+	var dimensions map[string]struct{}
 	if err := func() error {
 		// Parse request.
 		var req FieldDimensionsRequest
@@ -440,53 +437,6 @@ func (s *Service) processFieldDimensionsRequest(conn net.Conn) {
 		Dimensions: dimensions,
 	}); err != nil {
 		s.Logger.Printf("error writing FieldDimensions response: %s", err)
-		return
-	}
-}
-
-func (s *Service) processSeriesKeysRequest(conn net.Conn) {
-	var seriesList influxql.SeriesList
-	if err := func() error {
-		// Parse request.
-		var req SeriesKeysRequest
-		if err := DecodeLV(conn, &req); err != nil {
-			return err
-		}
-
-		sh, ok := s.TSDBStore.(ShardIteratorCreator)
-		if !ok {
-			return errors.New("unable to access a specific shard with this tsdb store")
-		}
-
-		// Collect iterator creators for each shard.
-		ics := make([]influxql.IteratorCreator, 0, len(req.ShardIDs))
-		for _, shardID := range req.ShardIDs {
-			ic := sh.ShardIteratorCreator(shardID)
-			if ic == nil {
-				return nil
-			}
-			ics = append(ics, ic)
-		}
-
-		// Generate a single iterator from all shards.
-		a, err := influxql.IteratorCreators(ics).SeriesKeys(req.Opt)
-		if err != nil {
-			return err
-		}
-		seriesList = a
-
-		return nil
-	}(); err != nil {
-		s.Logger.Printf("error reading SeriesKeys request: %s", err)
-		EncodeTLV(conn, seriesKeysResponseMessage, &SeriesKeysResponse{Err: err})
-		return
-	}
-
-	// Encode success response.
-	if err := EncodeTLV(conn, seriesKeysResponseMessage, &SeriesKeysResponse{
-		SeriesList: seriesList,
-	}); err != nil {
-		s.Logger.Printf("error writing SeriesKeys response: %s", err)
 		return
 	}
 }

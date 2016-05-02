@@ -44,20 +44,16 @@ message FieldDimensionsRequest {
     required bytes  Sources  = 2;
 }
 
+message Field {
+		required string Name = 1;
+		required int32  Type = 2;
+}
+
 message FieldDimensionsResponse {
     repeated string Fields     = 1;
     repeated string Dimensions = 2;
     optional string Err        = 3;
-}
-
-message SeriesKeysRequest {
-    repeated uint64 ShardIDs = 1;
-    required bytes  Opt      = 2;
-}
-
-message SeriesKeysResponse {
-    optional bytes  SeriesList = 1;
-    optional string Err        = 2;
+    repeated Field  Vars      = 4;
 }
 
 message ExpandSourcesRequest {

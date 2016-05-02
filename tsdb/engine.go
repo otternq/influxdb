@@ -32,7 +32,6 @@ type Engine interface {
 	LoadMetadataIndex(shard *Shard, index *DatabaseIndex) error
 
 	CreateIterator(opt influxql.IteratorOptions) (influxql.Iterator, error)
-	SeriesKeys(opt influxql.IteratorOptions) (influxql.SeriesList, error)
 	WritePoints(points []models.Point) error
 	ContainsSeries(keys []string) (map[string]bool, error)
 	DeleteSeries(keys []string) error

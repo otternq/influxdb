@@ -702,11 +702,11 @@ type floatAuxIterator struct {
 	background bool
 }
 
-func newFloatAuxIterator(input FloatIterator, seriesKeys SeriesList, opt IteratorOptions) *floatAuxIterator {
+func newFloatAuxIterator(input FloatIterator, opt IteratorOptions) *floatAuxIterator {
 	return &floatAuxIterator{
 		input:  newBufFloatIterator(input),
 		output: make(chan auxFloatPoint, 1),
-		fields: newAuxIteratorFields(seriesKeys, opt),
+		fields: newAuxIteratorFields(opt),
 	}
 }
 
@@ -723,7 +723,9 @@ func (itr *floatAuxIterator) Next() (*FloatPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
 }
-func (itr *floatAuxIterator) Iterator(name string) Iterator { return itr.fields.iterator(name) }
+func (itr *floatAuxIterator) Iterator(name string, typ DataType) Iterator {
+	return itr.fields.iterator(name, typ)
+}
 
 func (itr *floatAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, error) {
 	expr := opt.Expr
@@ -733,18 +735,14 @@ func (itr *floatAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, erro
 
 	switch expr := expr.(type) {
 	case *VarRef:
-		return itr.Iterator(expr.Val), nil
+		return itr.Iterator(expr.Val, expr.Type), nil
 	default:
 		panic(fmt.Sprintf("invalid expression type for an aux iterator: %T", expr))
 	}
 }
 
-func (itr *floatAuxIterator) FieldDimensions(sources Sources) (fields, dimensions map[string]struct{}, err error) {
+func (itr *floatAuxIterator) FieldDimensions(sources Sources) (fields map[string]DataType, dimensions map[string]struct{}, err error) {
 	return nil, nil, errors.New("not implemented")
-}
-
-func (itr *floatAuxIterator) SeriesKeys(opt IteratorOptions) (SeriesList, error) {
-	return nil, errors.New("not implemented")
 }
 
 func (itr *floatAuxIterator) ExpandSources(sources Sources) (Sources, error) {
@@ -2648,11 +2646,11 @@ type integerAuxIterator struct {
 	background bool
 }
 
-func newIntegerAuxIterator(input IntegerIterator, seriesKeys SeriesList, opt IteratorOptions) *integerAuxIterator {
+func newIntegerAuxIterator(input IntegerIterator, opt IteratorOptions) *integerAuxIterator {
 	return &integerAuxIterator{
 		input:  newBufIntegerIterator(input),
 		output: make(chan auxIntegerPoint, 1),
-		fields: newAuxIteratorFields(seriesKeys, opt),
+		fields: newAuxIteratorFields(opt),
 	}
 }
 
@@ -2669,7 +2667,9 @@ func (itr *integerAuxIterator) Next() (*IntegerPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
 }
-func (itr *integerAuxIterator) Iterator(name string) Iterator { return itr.fields.iterator(name) }
+func (itr *integerAuxIterator) Iterator(name string, typ DataType) Iterator {
+	return itr.fields.iterator(name, typ)
+}
 
 func (itr *integerAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, error) {
 	expr := opt.Expr
@@ -2679,18 +2679,14 @@ func (itr *integerAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, er
 
 	switch expr := expr.(type) {
 	case *VarRef:
-		return itr.Iterator(expr.Val), nil
+		return itr.Iterator(expr.Val, expr.Type), nil
 	default:
 		panic(fmt.Sprintf("invalid expression type for an aux iterator: %T", expr))
 	}
 }
 
-func (itr *integerAuxIterator) FieldDimensions(sources Sources) (fields, dimensions map[string]struct{}, err error) {
+func (itr *integerAuxIterator) FieldDimensions(sources Sources) (fields map[string]DataType, dimensions map[string]struct{}, err error) {
 	return nil, nil, errors.New("not implemented")
-}
-
-func (itr *integerAuxIterator) SeriesKeys(opt IteratorOptions) (SeriesList, error) {
-	return nil, errors.New("not implemented")
 }
 
 func (itr *integerAuxIterator) ExpandSources(sources Sources) (Sources, error) {
@@ -4591,11 +4587,11 @@ type stringAuxIterator struct {
 	background bool
 }
 
-func newStringAuxIterator(input StringIterator, seriesKeys SeriesList, opt IteratorOptions) *stringAuxIterator {
+func newStringAuxIterator(input StringIterator, opt IteratorOptions) *stringAuxIterator {
 	return &stringAuxIterator{
 		input:  newBufStringIterator(input),
 		output: make(chan auxStringPoint, 1),
-		fields: newAuxIteratorFields(seriesKeys, opt),
+		fields: newAuxIteratorFields(opt),
 	}
 }
 
@@ -4612,7 +4608,9 @@ func (itr *stringAuxIterator) Next() (*StringPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
 }
-func (itr *stringAuxIterator) Iterator(name string) Iterator { return itr.fields.iterator(name) }
+func (itr *stringAuxIterator) Iterator(name string, typ DataType) Iterator {
+	return itr.fields.iterator(name, typ)
+}
 
 func (itr *stringAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, error) {
 	expr := opt.Expr
@@ -4622,18 +4620,14 @@ func (itr *stringAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, err
 
 	switch expr := expr.(type) {
 	case *VarRef:
-		return itr.Iterator(expr.Val), nil
+		return itr.Iterator(expr.Val, expr.Type), nil
 	default:
 		panic(fmt.Sprintf("invalid expression type for an aux iterator: %T", expr))
 	}
 }
 
-func (itr *stringAuxIterator) FieldDimensions(sources Sources) (fields, dimensions map[string]struct{}, err error) {
+func (itr *stringAuxIterator) FieldDimensions(sources Sources) (fields map[string]DataType, dimensions map[string]struct{}, err error) {
 	return nil, nil, errors.New("not implemented")
-}
-
-func (itr *stringAuxIterator) SeriesKeys(opt IteratorOptions) (SeriesList, error) {
-	return nil, errors.New("not implemented")
 }
 
 func (itr *stringAuxIterator) ExpandSources(sources Sources) (Sources, error) {
@@ -6534,11 +6528,11 @@ type booleanAuxIterator struct {
 	background bool
 }
 
-func newBooleanAuxIterator(input BooleanIterator, seriesKeys SeriesList, opt IteratorOptions) *booleanAuxIterator {
+func newBooleanAuxIterator(input BooleanIterator, opt IteratorOptions) *booleanAuxIterator {
 	return &booleanAuxIterator{
 		input:  newBufBooleanIterator(input),
 		output: make(chan auxBooleanPoint, 1),
-		fields: newAuxIteratorFields(seriesKeys, opt),
+		fields: newAuxIteratorFields(opt),
 	}
 }
 
@@ -6555,7 +6549,9 @@ func (itr *booleanAuxIterator) Next() (*BooleanPoint, error) {
 	p := <-itr.output
 	return p.point, p.err
 }
-func (itr *booleanAuxIterator) Iterator(name string) Iterator { return itr.fields.iterator(name) }
+func (itr *booleanAuxIterator) Iterator(name string, typ DataType) Iterator {
+	return itr.fields.iterator(name, typ)
+}
 
 func (itr *booleanAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, error) {
 	expr := opt.Expr
@@ -6565,18 +6561,14 @@ func (itr *booleanAuxIterator) CreateIterator(opt IteratorOptions) (Iterator, er
 
 	switch expr := expr.(type) {
 	case *VarRef:
-		return itr.Iterator(expr.Val), nil
+		return itr.Iterator(expr.Val, expr.Type), nil
 	default:
 		panic(fmt.Sprintf("invalid expression type for an aux iterator: %T", expr))
 	}
 }
 
-func (itr *booleanAuxIterator) FieldDimensions(sources Sources) (fields, dimensions map[string]struct{}, err error) {
+func (itr *booleanAuxIterator) FieldDimensions(sources Sources) (fields map[string]DataType, dimensions map[string]struct{}, err error) {
 	return nil, nil, errors.New("not implemented")
-}
-
-func (itr *booleanAuxIterator) SeriesKeys(opt IteratorOptions) (SeriesList, error) {
-	return nil, errors.New("not implemented")
 }
 
 func (itr *booleanAuxIterator) ExpandSources(sources Sources) (Sources, error) {

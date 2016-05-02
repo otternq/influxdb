@@ -303,7 +303,7 @@ func (r *FieldDimensionsRequest) UnmarshalBinary(data []byte) error {
 
 // FieldDimensionsResponse represents a response from remote iterator creation.
 type FieldDimensionsResponse struct {
-	Fields     map[string]struct{}
+	Fields     map[string]influxql.DataType
 	Dimensions map[string]struct{}
 	Err        error
 }
@@ -312,8 +312,13 @@ type FieldDimensionsResponse struct {
 func (r *FieldDimensionsResponse) MarshalBinary() ([]byte, error) {
 	var pb internal.FieldDimensionsResponse
 
+	pb.Vars = make([]*internal.Field, 0, len(r.Fields))
 	pb.Fields = make([]string, 0, len(r.Fields))
-	for k := range r.Fields {
+	for k, typ := range r.Fields {
+		pb.Vars = append(pb.Vars, &internal.Field{
+			Name: proto.String(k),
+			Type: proto.Int32(int32(typ)),
+		})
 		pb.Fields = append(pb.Fields, k)
 	}
 
@@ -335,9 +340,9 @@ func (r *FieldDimensionsResponse) UnmarshalBinary(data []byte) error {
 		return err
 	}
 
-	r.Fields = make(map[string]struct{}, len(pb.GetFields()))
-	for _, s := range pb.GetFields() {
-		r.Fields[s] = struct{}{}
+	r.Fields = make(map[string]influxql.DataType, len(pb.GetVars()))
+	for _, s := range pb.GetVars() {
+		r.Fields[s.GetName()] = influxql.DataType(s.GetType())
 	}
 
 	r.Dimensions = make(map[string]struct{}, len(pb.GetDimensions()))
@@ -348,78 +353,6 @@ func (r *FieldDimensionsResponse) UnmarshalBinary(data []byte) error {
 	if pb.Err != nil {
 		r.Err = errors.New(pb.GetErr())
 	}
-	return nil
-}
-
-// SeriesKeysRequest represents a request to retrieve a list of series keys.
-type SeriesKeysRequest struct {
-	ShardIDs []uint64
-	Opt      influxql.IteratorOptions
-}
-
-// MarshalBinary encodes r to a binary format.
-func (r *SeriesKeysRequest) MarshalBinary() ([]byte, error) {
-	buf, err := r.Opt.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	return proto.Marshal(&internal.SeriesKeysRequest{
-		ShardIDs: r.ShardIDs,
-		Opt:      buf,
-	})
-}
-
-// UnmarshalBinary decodes data into r.
-func (r *SeriesKeysRequest) UnmarshalBinary(data []byte) error {
-	var pb internal.SeriesKeysRequest
-	if err := proto.Unmarshal(data, &pb); err != nil {
-		return err
-	}
-
-	r.ShardIDs = pb.GetShardIDs()
-	if err := r.Opt.UnmarshalBinary(pb.GetOpt()); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SeriesKeysResponse represents a response from retrieving series keys.
-type SeriesKeysResponse struct {
-	SeriesList influxql.SeriesList
-	Err        error
-}
-
-// MarshalBinary encodes r to a binary format.
-func (r *SeriesKeysResponse) MarshalBinary() ([]byte, error) {
-	var pb internal.SeriesKeysResponse
-
-	buf, err := r.SeriesList.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	pb.SeriesList = buf
-
-	if r.Err != nil {
-		pb.Err = proto.String(r.Err.Error())
-	}
-	return proto.Marshal(&pb)
-}
-
-// UnmarshalBinary decodes data into r.
-func (r *SeriesKeysResponse) UnmarshalBinary(data []byte) error {
-	var pb internal.SeriesKeysResponse
-	if err := proto.Unmarshal(data, &pb); err != nil {
-		return err
-	}
-
-	if err := r.SeriesList.UnmarshalBinary(pb.GetSeriesList()); err != nil {
-		return err
-	}
-
-	if pb.Err != nil {
-		r.Err = errors.New(pb.GetErr())
-	}
-
 	return nil
 }
 

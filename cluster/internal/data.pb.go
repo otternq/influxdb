@@ -17,9 +17,8 @@ It has these top-level messages:
 	CreateIteratorResponse
 	IteratorStats
 	FieldDimensionsRequest
+	Field
 	FieldDimensionsResponse
-	SeriesKeysRequest
-	SeriesKeysResponse
 	ExpandSourcesRequest
 	ExpandSourcesResponse
 */
@@ -250,10 +249,35 @@ func (m *FieldDimensionsRequest) GetSources() []byte {
 	return nil
 }
 
+type Field struct {
+	Name             *string `protobuf:"bytes,1,req,name=Name" json:"Name,omitempty"`
+	Type             *int32  `protobuf:"varint,2,req,name=Type" json:"Type,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *Field) Reset()         { *m = Field{} }
+func (m *Field) String() string { return proto.CompactTextString(m) }
+func (*Field) ProtoMessage()    {}
+
+func (m *Field) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *Field) GetType() int32 {
+	if m != nil && m.Type != nil {
+		return *m.Type
+	}
+	return 0
+}
+
 type FieldDimensionsResponse struct {
 	Fields           []string `protobuf:"bytes,1,rep,name=Fields" json:"Fields,omitempty"`
 	Dimensions       []string `protobuf:"bytes,2,rep,name=Dimensions" json:"Dimensions,omitempty"`
 	Err              *string  `protobuf:"bytes,3,opt,name=Err" json:"Err,omitempty"`
+	Vars             []*Field `protobuf:"bytes,4,rep,name=Vars" json:"Vars,omitempty"`
 	XXX_unrecognized []byte   `json:"-"`
 }
 
@@ -282,52 +306,11 @@ func (m *FieldDimensionsResponse) GetErr() string {
 	return ""
 }
 
-type SeriesKeysRequest struct {
-	ShardIDs         []uint64 `protobuf:"varint,1,rep,name=ShardIDs" json:"ShardIDs,omitempty"`
-	Opt              []byte   `protobuf:"bytes,2,req,name=Opt" json:"Opt,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
-}
-
-func (m *SeriesKeysRequest) Reset()         { *m = SeriesKeysRequest{} }
-func (m *SeriesKeysRequest) String() string { return proto.CompactTextString(m) }
-func (*SeriesKeysRequest) ProtoMessage()    {}
-
-func (m *SeriesKeysRequest) GetShardIDs() []uint64 {
+func (m *FieldDimensionsResponse) GetVars() []*Field {
 	if m != nil {
-		return m.ShardIDs
+		return m.Vars
 	}
 	return nil
-}
-
-func (m *SeriesKeysRequest) GetOpt() []byte {
-	if m != nil {
-		return m.Opt
-	}
-	return nil
-}
-
-type SeriesKeysResponse struct {
-	SeriesList       []byte  `protobuf:"bytes,1,opt,name=SeriesList" json:"SeriesList,omitempty"`
-	Err              *string `protobuf:"bytes,2,opt,name=Err" json:"Err,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *SeriesKeysResponse) Reset()         { *m = SeriesKeysResponse{} }
-func (m *SeriesKeysResponse) String() string { return proto.CompactTextString(m) }
-func (*SeriesKeysResponse) ProtoMessage()    {}
-
-func (m *SeriesKeysResponse) GetSeriesList() []byte {
-	if m != nil {
-		return m.SeriesList
-	}
-	return nil
-}
-
-func (m *SeriesKeysResponse) GetErr() string {
-	if m != nil && m.Err != nil {
-		return *m.Err
-	}
-	return ""
 }
 
 type ExpandSourcesRequest struct {
@@ -387,9 +370,8 @@ func init() {
 	proto.RegisterType((*CreateIteratorResponse)(nil), "cluster.CreateIteratorResponse")
 	proto.RegisterType((*IteratorStats)(nil), "cluster.IteratorStats")
 	proto.RegisterType((*FieldDimensionsRequest)(nil), "cluster.FieldDimensionsRequest")
+	proto.RegisterType((*Field)(nil), "cluster.Field")
 	proto.RegisterType((*FieldDimensionsResponse)(nil), "cluster.FieldDimensionsResponse")
-	proto.RegisterType((*SeriesKeysRequest)(nil), "cluster.SeriesKeysRequest")
-	proto.RegisterType((*SeriesKeysResponse)(nil), "cluster.SeriesKeysResponse")
 	proto.RegisterType((*ExpandSourcesRequest)(nil), "cluster.ExpandSourcesRequest")
 	proto.RegisterType((*ExpandSourcesResponse)(nil), "cluster.ExpandSourcesResponse")
 }
