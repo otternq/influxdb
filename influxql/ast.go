@@ -2639,6 +2639,9 @@ type ShowTagValuesStatement struct {
 	// Tag key(s) to pull values from.
 	TagKeys []string
 
+	// Regex to select tag keys with.
+	Regex *RegexLiteral
+
 	// An expression evaluated on data point.
 	Condition Expr
 
@@ -2662,14 +2665,20 @@ func (s *ShowTagValuesStatement) String() string {
 		_, _ = buf.WriteString(" FROM ")
 		_, _ = buf.WriteString(s.Sources.String())
 	}
-	_, _ = buf.WriteString(" WITH KEY IN (")
-	for idx, tagKey := range s.TagKeys {
-		if idx != 0 {
-			_, _ = buf.WriteString(", ")
+	_, _ = buf.WriteString(" WITH KEY ")
+	if s.Regex != nil {
+		_, _ = buf.WriteString("=~ ")
+		_, _ = buf.WriteString(s.Regex.String())
+	} else {
+		_, _ = buf.WriteString("IN (")
+		for idx, tagKey := range s.TagKeys {
+			if idx != 0 {
+				_, _ = buf.WriteString(", ")
+			}
+			_, _ = buf.WriteString(QuoteIdent(tagKey))
 		}
-		_, _ = buf.WriteString(QuoteIdent(tagKey))
+		_, _ = buf.WriteString(")")
 	}
-	_, _ = buf.WriteString(")")
 	if s.Condition != nil {
 		_, _ = buf.WriteString(" WHERE ")
 		_, _ = buf.WriteString(s.Condition.String())

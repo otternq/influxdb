@@ -1,3 +1,9 @@
+## v0.14.0 [unreleased]
+
+### Features
+
+- [#4532](https://github.com/influxdata/influxdb/issues/4532): Support regex selection in SHOW TAG VALUES for the key.
+
 ## v0.13.0 [unreleased]
 
 ### Release Notes

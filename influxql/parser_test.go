@@ -1112,6 +1112,14 @@ func TestParser_ParseStatement(t *testing.T) {
 			},
 		},
 
+		// SHOW TAG VALUES WITH KEY =~ /<regex>/
+		{
+			s: `SHOW TAG VALUES WITH KEY =~ /(host|region)/`,
+			stmt: &influxql.ShowTagValuesStatement{
+				Regex: &influxql.RegexLiteral{Val: regexp.MustCompile(`(host|region)`)},
+			},
+		},
+
 		// SHOW USERS
 		{
 			s:    `SHOW USERS`,

@@ -1203,7 +1203,7 @@ func (p *Parser) parseShowTagValuesStatement() (*ShowTagValuesStatement, error) 
 	}
 
 	// Parse required WITH KEY.
-	if stmt.TagKeys, err = p.parseTagKeys(); err != nil {
+	if stmt.TagKeys, stmt.Regex, err = p.parseTagKeys(); err != nil {
 		return nil, err
 	}
 
@@ -1231,44 +1231,54 @@ func (p *Parser) parseShowTagValuesStatement() (*ShowTagValuesStatement, error) 
 }
 
 // parseTagKeys parses a string and returns a list of tag keys.
-func (p *Parser) parseTagKeys() ([]string, error) {
+func (p *Parser) parseTagKeys() ([]string, *RegexLiteral, error) {
 	var err error
 
 	// Parse required WITH KEY tokens.
 	if err := p.parseTokens([]Token{WITH, KEY}); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var tagKeys []string
 
-	// Parse required IN or EQ token.
+	// Parse required IN, EQ, or EQREGEX token.
 	if tok, pos, lit := p.scanIgnoreWhitespace(); tok == IN {
 		// Parse required ( token.
 		if tok, pos, lit = p.scanIgnoreWhitespace(); tok != LPAREN {
-			return nil, newParseError(tokstr(tok, lit), []string{"("}, pos)
+			return nil, nil, newParseError(tokstr(tok, lit), []string{"("}, pos)
 		}
 
 		// Parse tag key list.
 		if tagKeys, err = p.parseIdentList(); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// Parse required ) token.
 		if tok, pos, lit = p.scanIgnoreWhitespace(); tok != RPAREN {
-			return nil, newParseError(tokstr(tok, lit), []string{")"}, pos)
+			return nil, nil, newParseError(tokstr(tok, lit), []string{")"}, pos)
 		}
 	} else if tok == EQ {
 		// Parse required tag key.
 		ident, err := p.parseIdent()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		tagKeys = append(tagKeys, ident)
+	} else if tok == EQREGEX {
+		re, err := p.parseRegex()
+		if err != nil {
+			return nil, nil, err
+		} else if re == nil {
+			// parseRegex can return an empty type, but we need it to be present
+			tok, pos, lit := p.scanIgnoreWhitespace()
+			return nil, nil, newParseError(tokstr(tok, lit), []string{"regex"}, pos)
+		}
+		return nil, re, nil
 	} else {
-		return nil, newParseError(tokstr(tok, lit), []string{"IN", "="}, pos)
+		return nil, nil, newParseError(tokstr(tok, lit), []string{"IN", "=", "=~"}, pos)
 	}
 
-	return tagKeys, nil
+	return tagKeys, nil, nil
 }
 
 // parseShowUsersStatement parses a string and returns a ShowUsersStatement.

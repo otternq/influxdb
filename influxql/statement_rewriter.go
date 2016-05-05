@@ -89,23 +89,47 @@ func rewriteShowTagValuesStatement(stmt *ShowTagValuesStatement) (Statement, err
 	}
 
 	condition := stmt.Condition
-	if len(stmt.TagKeys) > 0 {
-		var expr Expr
-		for _, tagKey := range stmt.TagKeys {
-			tagExpr := &BinaryExpr{
-				Op:  EQ,
-				LHS: &VarRef{Val: "_tagKey"},
-				RHS: &StringLiteral{Val: tagKey},
-			}
+	if stmt.Regex != nil {
+		expr := &BinaryExpr{
+			Op:  EQREGEX,
+			LHS: &VarRef{Val: "_tagKey"},
+			RHS: stmt.Regex,
+		}
 
-			if expr != nil {
-				expr = &BinaryExpr{
-					Op:  OR,
-					LHS: expr,
-					RHS: tagExpr,
+		if condition == nil {
+			condition = expr
+		} else {
+			condition = &BinaryExpr{
+				Op:  AND,
+				LHS: &ParenExpr{Expr: condition},
+				RHS: &ParenExpr{Expr: expr},
+			}
+		}
+	} else if len(stmt.TagKeys) > 0 {
+		var expr Expr
+		if stmt.Regex != nil {
+			expr = &BinaryExpr{
+				Op:  EQREGEX,
+				LHS: &VarRef{Val: "_tagKey"},
+				RHS: stmt.Regex,
+			}
+		} else {
+			for _, tagKey := range stmt.TagKeys {
+				tagExpr := &BinaryExpr{
+					Op:  EQ,
+					LHS: &VarRef{Val: "_tagKey"},
+					RHS: &StringLiteral{Val: tagKey},
 				}
-			} else {
-				expr = tagExpr
+
+				if expr != nil {
+					expr = &BinaryExpr{
+						Op:  OR,
+						LHS: expr,
+						RHS: tagExpr,
+					}
+				} else {
+					expr = tagExpr
+				}
 			}
 		}
 
